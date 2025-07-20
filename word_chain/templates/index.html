@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Word Chain Game - AI vs You</title>
+    <link rel="stylesheet" href="{{ url_for('word_chain.static', filename='style.css') }}">
+</head>
+<body>
+    <div id="game-data"
+         data-timer-value="{{ game_state.timer_value }}"
+         data-game-over="{{ game_state.game_over }}"
+         data-is-paused="{{ game_state.is_paused }}"
+         style="display:none;"></div>
+    <div class="main-flex">
+        <h1 class="game-title">Word Chain Game</h1>
+        <div class="game-container">
+            {% if message %}
+                <div class="message {% if game_state.game_over %}game-over{% endif %}">
+                    {% if game_state.wrong_word %}
+                        <span class="error-icon">❌</span>
+                    {% endif %}
+                    {{ message }}
+                </div>
+            {% endif %}
+
+            {% if ai_word %}
+                <div class="ai-word">🤖 AI Played: {{ ai_word }}</div>
+            {% endif %}
+
+            <div class="timer-container">
+                <div id="timer" class="{% if game_state.game_over %}game-over{% endif %}">{{ game_state.timer_value }}</div>
+                <div class="timer-label">seconds left</div>
+            </div>
+
+            <form method="POST" id="gameForm" {% if game_state.game_over or game_state.is_paused %}style="display: none;"{% endif %}>
+                <input type="text" name="player_word" placeholder="Enter your word..." required autofocus>
+                <input type="hidden" name="last_letter" value="{{ last_letter }}">
+                <input type="hidden" name="start_time" id="startTime" value="0">
+                <input type="hidden" name="action" value="play">
+                <br>
+                <button type="submit">▶ Play Turn</button>
+            </form>
+
+            <div class="game-controls">
+                {% if not game_state.game_over %}
+                    <form method="POST" style="display: inline;" id="pauseForm">
+                        <input type="hidden" name="action" value="pause">
+                        <input type="hidden" name="timer_value" id="timerValue" value="{{ game_state.timer_value }}">
+                        <button type="submit" id="pauseButton">
+                            {% if game_state.is_paused %}▶ Resume{% else %}⏸ Pause{% endif %}
+                        </button>
+                    </form>
+                {% endif %}
+                <form method="POST" style="display: inline;">
+                    <input type="hidden" name="action" value="reset">
+                    <button type="submit" class="{% if game_state.game_over %}restart-button{% endif %}">
+                        {% if game_state.game_over %}🔄 Play Again{% else %}🔄 Restart Game{% endif %}
+                    </button>
+                </form>
+            </div>
+
+            {% if last_letter and not game_state.game_over and not game_state.is_paused %}
+                <p>Your word must start with: <strong>{{ last_letter.upper() }}</strong></p>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Read values from data attributes
+        const gameData = document.getElementById('game-data');
+        const TIMER_VALUE = parseInt(gameData.dataset.timerValue, 10);
+        const GAME_OVER = gameData.dataset.gameOver === "True" || gameData.dataset.gameOver === "true";
+        const IS_PAUSED = gameData.dataset.isPaused === "True" || gameData.dataset.isPaused === "true";
+
+        let timer;
+        let timeLeft = TIMER_VALUE;
+        const timerDisplay = document.getElementById('timer');
+        const startTimeInput = document.getElementById('startTime');
+        const gameForm = document.getElementById('gameForm');
+        const timerValueInput = document.getElementById('timerValue');
+        const pauseButton = document.getElementById('pauseButton');
+        const pauseForm = document.getElementById('pauseForm');
+
+        function startTimer() {
+            clearInterval(timer);
+            timeLeft = TIMER_VALUE;
+            timerDisplay.textContent = timeLeft;
+            startTimeInput.value = Date.now() / 1000;
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+                timerValueInput.value = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    gameForm.submit();
+                }
+            }, 1000);
+        }
+
+        // Initialize timer based on game state
+        if (!GAME_OVER && !IS_PAUSED) {
+            startTimer();
+        }
+
+        // Handle form submissions
+        gameForm.onsubmit = function() {
+            clearInterval(timer);
+        };
+
+        if (pauseForm) {
+            pauseForm.onsubmit = function() {
+                clearInterval(timer);
+                timerValueInput.value = timeLeft;
+            };
+        }
+
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                clearInterval(timer);
+            } else if (!GAME_OVER && !IS_PAUSED) {
+                startTimer();
+            }
+        });
+    </script>
+</body>
+</html>

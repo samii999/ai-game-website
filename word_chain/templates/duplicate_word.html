@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Game Over - Duplicate Word</title>
+    <link rel="stylesheet" href="{{ url_for('word_chain.static', filename='style.css') }}">
+</head>
+<body>
+    <div class="game-over-container">
+        <div class="game-over-content">
+            <div class="game-over-icon">❌</div>
+            <h1>Game Over</h1>
+            <div class="game-over-message">
+                <p>You entered the same word twice!<br>Game Over.</p>
+                <p class="sub-message">The word <span class="highlight">{{ last_word }}</span> was already used.</p>
+            </div>
+            <div class="game-stats">
+                <p>Last word: <span class="highlight">{{ last_word }}</span></p>
+                <p>Words used: <span class="highlight">{{ words_used }}</span></p>
+            </div>
+            <form method="POST" action="{{ url_for('word_chain.index') }}">
+                <input type="hidden" name="action" value="reset">
+                <button type="submit" class="restart-button">🔄 Play Again</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html> 

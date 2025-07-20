@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Time's Up! - Word Chain Game</title>
+    <link rel="stylesheet" href="{{ url_for('word_chain.static', filename='style.css') }}">
+</head>
+<body>
+    <div class="game-over-container">
+        <div class="game-over-content">
+            <div class="game-over-icon">⏰</div>
+            <h1>Time's Up!</h1>
+            <div class="game-over-message">
+                <p>You ran out of time!</p>
+                <p class="sub-message">The game is over because you took too long to enter a word.</p>
+            </div>
+            <div class="game-stats">
+                <p>Last word: <span class="highlight">{{ last_word }}</span></p>
+                <p>Words used: <span class="highlight">{{ words_used }}</span></p>
+            </div>
+            <form method="POST" action="{{ url_for('word_chain.index') }}">
+                <input type="hidden" name="action" value="reset">
+                <button type="submit" class="restart-button">🔄 Play Again</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html> 
